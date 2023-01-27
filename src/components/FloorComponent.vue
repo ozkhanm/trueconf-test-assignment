@@ -1,24 +1,35 @@
 <template>
   <div class="floor">
-      <p class="floor-label">{{ label }}</p>
+    <p class="floor__label">{{ floorNumber }}</p>
 
-      <div class="floor-button-container">
-        <span class="floor-button-decoration" />
-        <button
-          class="floor-button"
-          type="button"
-        />
-      </div>
+    <div class="floor__button-container">
+      <button
+        class="button"
+        type="button"
+        @click="floorButtonClickHandler(floorNumber)"
+      >
+        <span class="button__decoration" />
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
+import { mapActions } from "vuex";
+
 export default {
   name: "FloorComponent",
   props: {
-    label: {
+    floorNumber: {
       type: Number,
       required: true
+    }
+  },
+  methods: {
+    ...mapActions(["processFloor"]),
+
+    floorButtonClickHandler(floorNumber) {
+      this.processFloor(floorNumber);
     }
   }
 };
@@ -32,40 +43,40 @@ export default {
   padding-bottom: 10px;
 
   box-sizing: border-box;
-}
 
-.floor-label {
-  margin: 0;
-  margin-bottom: 15px;
-}
+  &__label {
+    margin: 0;
+    margin-bottom: 15px;
+  }
 
-.floor-button-container {
-  position: relative;
+  &__button-container {
+    position: relative;
 
-  width: 20px;
-  height: 20px;
+    width: 20px;
+    height: 20px;
 
-  border: 1px solid #84babe;
-  border-radius: 2px;
+    border: 1px solid #84babe;
+    border-radius: 2px;
 
-  &:hover {
-    background-color: #e0f5f5;
-
-    & .floor-button {
+    &:hover {
       background-color: #e0f5f5;
+
+      & .floor-button {
+        background-color: #e0f5f5;
+      }
     }
-  }
 
-  &:active {
-    background-color: #d8eaea;
-
-    & .floor-button {
+    &:active {
       background-color: #d8eaea;
+
+      & .floor-button {
+        background-color: #d8eaea;
+      }
     }
   }
 }
 
-.floor-button {
+.button {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -80,7 +91,7 @@ export default {
 
   translate: -50% -50%;
 
-  &-decoration {
+  &__decoration {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -94,6 +105,18 @@ export default {
     border-radius: 50%;
     
     translate: -50% -50%;
+    cursor: pointer;
+  }
+
+  &::before{
+    content: "";
+    position: absolute;
+
+    width: 22px;
+    height: 22px;
+
+    translate: -50% -50%;
+    cursor: pointer;
   }
 }
 </style>

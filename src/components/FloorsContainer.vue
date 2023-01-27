@@ -1,9 +1,9 @@
 <template>
   <div class="floors">
     <FloorComponent
-      v-for="data in floorsQuantity"
-      :key="data"
-      :label="data"
+      v-for="floorNumber in floorsQuantity"
+      :key="floorNumber"
+      :floorNumber="floorNumber"
     />
   </div>
 </template>
@@ -22,7 +22,7 @@ export default {
     return {
       floorsQuantity: parseInt(data.FLOORS_QUANTITY)
     };
-  },
+  }
 };
 </script>
 

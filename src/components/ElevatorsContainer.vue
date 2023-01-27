@@ -1,26 +1,29 @@
 <template>
   <div class="elevators">
     <ElevatorShaftComponent 
-      v-for="data in elevatorsQuantity"
-      :key="data"
+      v-for="elevator in elevatorsData"
+      :key="elevator.id"
+      :id="elevator.id"
+      :targetFloor="elevator.targetFloor"
+      :currentFloor="elevator.currentFloor"
+      :isBusy="elevator.isBusy"
+      :floorsQue="elevator.floorsQue"
     />
   </div>
 </template>
 
 <script>
-import ElevatorShaftComponent from "@/components/ElevatorShaftComponent.vue";
+import { mapState } from "vuex";
 
-import data from "@/config.json";
+import ElevatorShaftComponent from "@/components/ElevatorShaftComponent.vue";
 
 export default {
   name: "ElevatorsContainer",
   components: {
     ElevatorShaftComponent
   },
-  data() {
-    return {
-      elevatorsQuantity: parseInt(data.ELEVATORS_QUANTITY)
-    };
+  computed: {
+    ...mapState(["elevatorsData"])
   }
 };
 </script>
