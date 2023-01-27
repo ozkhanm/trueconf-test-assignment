@@ -5,17 +5,28 @@
       :key="floorNumber"
       class="elevator-floor"
       :class="getActiveFloorClass(floorNumber)"
-    />
+    >
+      <ElevatorDisplayBoard
+        v-if="isActiveElevator(floorNumber)"
+        :floorNumber="floorNumber"
+        :moveDirection="moveDirection"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import { mapState, mapActions } from "vuex";
 
+import ElevatorDisplayBoard from "@/components/ElevatorDisplayBoard.vue";
+
 import data from "@/config.json";
 
 export default {
   name: "ElevatorShaftComponent",
+  components: {
+    ElevatorDisplayBoard
+  },
   props: {
     id: {
       type: Number,
@@ -43,13 +54,20 @@ export default {
     };
   },
   computed: {
-    ...mapState(["elevatorsData"])
+    ...mapState(["elevatorsData"]),
+
+    moveDirection() {
+      return this.targetFloor - this.currentFloor >= 0 ? "UP" : "DOWN";
+    }
   },
   methods: {
     ...mapActions(["processFloor"]),
 
     getActiveFloorClass(floorNumber) {
       return floorNumber === this.currentFloor ? "elevator-floor--active" : null;
+    },
+    isActiveElevator(floorNumber) {
+      return this.isBusy && floorNumber === this.currentFloor ? true : false;
     }
   },
   watch: {
