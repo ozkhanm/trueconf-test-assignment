@@ -76,7 +76,7 @@ const getters = {
     return state.elevatorsData.map(it => it.currentFloor);
   },
   vacantElevatorIdByCurrentFloor: state => floor => {
-    return state.elevatorsData.findIndex(it => it.currentFloor === floor && it.status === ELEVATOR_STATUS.VACANT);
+    return state.elevatorsData.findIndex(it => it.currentFloor === floor && it.status !== ELEVATOR_STATUS.BUSY);
   },
   elevatorIdExecutingFloor: state => floor => {
     return state.elevatorsData.findIndex(it => it.targetFloor === floor && it.status === ELEVATOR_STATUS.BUSY);

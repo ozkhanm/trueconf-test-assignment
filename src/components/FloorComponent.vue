@@ -2,20 +2,27 @@
   <div class="floor">
     <p class="floor__label">{{ floorNumber }}</p>
 
-    <div class="floor__button-container">
+    <div
+      class="floor__button-container"
+      :class="floorButtonContainerClass"
+    >
       <button
         class="button"
         type="button"
+        :class="buttonClass"
         @click="floorButtonClickHandler(floorNumber)"
       >
-        <span class="button__decoration" />
+        <span
+          class="button__decoration"
+          :class="buttonDecorationClass"
+        />
       </button>
     </div>
   </div>
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {
   name: "FloorComponent",
@@ -23,6 +30,23 @@ export default {
     floorNumber: {
       type: Number,
       required: true
+    }
+  },
+  computed: {
+    ...mapState(["elevatorsData"]),
+    ...mapGetters(["overallFloorsQue"]),
+
+    isActiveFloor() {
+      return this.overallFloorsQue.includes(this.floorNumber) || this.elevatorsData.filter(it => it.currentFloor !== it.targetFloor).findIndex(it => it.targetFloor === this.floorNumber) !== -1;
+    },
+    floorButtonContainerClass() {
+      return this.isActiveFloor ? "floor__button-container--active" : "";
+    },
+    buttonClass() {
+      return this.isActiveFloor ? "button--active" : "";
+    },
+    buttonDecorationClass() {
+      return this.isActiveFloor ? "button__decoration--active" : "";
     }
   },
   methods: {
@@ -60,17 +84,21 @@ export default {
 
     &:hover {
       background-color: #e0f5f5;
-
-      & .floor-button {
-        background-color: #e0f5f5;
-      }
     }
 
     &:active {
       background-color: #d8eaea;
+    }
 
-      & .floor-button {
-        background-color: #d8eaea;
+    &--active {
+      border: 1px solid #f27d15;
+
+      &:hover {
+        background-color: #fef4eb;
+      }
+
+      &:active {
+        background-color: #ffe6d7;
       }
     }
   }
@@ -91,6 +119,10 @@ export default {
 
   translate: -50% -50%;
 
+  &--active {
+    border: 1px solid #f27d15;
+  }
+
   &__decoration {
     position: absolute;
     left: 50%;
@@ -106,6 +138,10 @@ export default {
     
     translate: -50% -50%;
     cursor: pointer;
+
+    &--active {
+      background-color: #f27d15;
+    }
   }
 
   &::before{
