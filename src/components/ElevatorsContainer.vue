@@ -6,7 +6,7 @@
       :id="elevator.id"
       :targetFloor="elevator.targetFloor"
       :currentFloor="elevator.currentFloor"
-      :isBusy="elevator.isBusy"
+      :status="elevator.status"
       :floorsQue="elevator.floorsQue"
     />
   </div>

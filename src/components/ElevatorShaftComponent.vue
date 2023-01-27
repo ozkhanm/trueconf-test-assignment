@@ -4,7 +4,7 @@
       v-for="floorNumber in floorsQuantity"
       :key="floorNumber"
       class="elevator-floor"
-      :class="getActiveFloorClass(floorNumber)"
+      :class="getActiveFloorClass(floorNumber) + ' ' + getElevatorWaitingClass(floorNumber)"
     >
       <ElevatorDisplayBoard
         v-if="isActiveElevator(floorNumber)"
@@ -21,6 +21,10 @@ import { mapState, mapActions } from "vuex";
 import ElevatorDisplayBoard from "@/components/ElevatorDisplayBoard.vue";
 
 import data from "@/config.json";
+import {
+  ELEVATOR_STATUS,
+  ELEVATOR_MOVING_DIRECTION
+} from "@/constants";
 
 export default {
   name: "ElevatorShaftComponent",
@@ -39,8 +43,8 @@ export default {
       type: Number,
       required: true
     },
-    isBusy: {
-      type: Boolean,
+    status: {
+      type: String,
       required: true
     },
     floorsQue: {
@@ -57,22 +61,25 @@ export default {
     ...mapState(["elevatorsData"]),
 
     moveDirection() {
-      return this.targetFloor - this.currentFloor >= 0 ? "UP" : "DOWN";
+      return this.targetFloor - this.currentFloor >= 0 ? ELEVATOR_MOVING_DIRECTION.UP : ELEVATOR_MOVING_DIRECTION.DOWN;
     }
   },
   methods: {
     ...mapActions(["processFloor"]),
 
     getActiveFloorClass(floorNumber) {
-      return floorNumber === this.currentFloor ? "elevator-floor--active" : null;
+      return floorNumber === this.currentFloor ? "elevator-floor--active" : "";
     },
     isActiveElevator(floorNumber) {
-      return this.isBusy && floorNumber === this.currentFloor ? true : false;
+      return this.status !== ELEVATOR_STATUS.VACANT && floorNumber === this.currentFloor ? true : false;
+    },
+    getElevatorWaitingClass(floorNumber) {
+      return this.status === ELEVATOR_STATUS.CHILL && floorNumber === this.targetFloor ? "elevator-floor--chill" : "";
     }
   },
   watch: {
     "$store.state.elevatorsData": function() {
-      if (this.floorsQue.length !== 0 && this.isBusy === false) {
+      if (this.floorsQue.length !== 0 && this.status === ELEVATOR_STATUS.VACANT) {
         this.processFloor(this.floorsQue[0]);
       }
     }
@@ -110,6 +117,46 @@ export default {
     width: 100%;
     
     border-bottom: 1px solid rgb(236, 232, 232);
+  }
+
+  &--chill {
+    @keyframes blink {
+      0% {
+        opacity: 1;
+      }
+      10% {
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      30% {
+        opacity: 0;
+      }
+      40% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0;
+      }
+      60% {
+        opacity: 1;
+      }
+      70% {
+        opacity: 0;
+      }
+      80% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    animation: blink 3s linear;
   }
 }
 </style>

@@ -9,6 +9,10 @@ import {
 } from "@/store/mutation-types";
 
 import data from "@/config.json";
+import {
+  ELEVATOR_STATUS,
+  CHILL_TIME
+} from "@/constants";
 
 Vue.use(Vuex);
 
@@ -20,14 +24,14 @@ const initializeElevatorsData = quantity => {
       id: index,
       targetFloor: 1,
       currentFloor: 1,
-      isBusy: false,
+      status: ELEVATOR_STATUS.VACANT,
       floorsQue: []
     };
   });
 };
 
 const getLessBusyElevatorId = (elevatorsData, floorNumber) => {
-  const vacantElevators = elevatorsData.filter(it => it.isBusy === false);
+  const vacantElevators = elevatorsData.filter(it => it.status === ELEVATOR_STATUS.VACANT);
 
   if (vacantElevators.length !== 0) {
     let id;
@@ -72,10 +76,10 @@ const getters = {
     return state.elevatorsData.map(it => it.currentFloor);
   },
   vacantElevatorIdByCurrentFloor: state => floor => {
-    return state.elevatorsData.findIndex(it => it.currentFloor === floor && it.isBusy === false);
+    return state.elevatorsData.findIndex(it => it.currentFloor === floor && it.status === ELEVATOR_STATUS.VACANT);
   },
   elevatorIdExecutingFloor: state => floor => {
-    return state.elevatorsData.findIndex(it => it.targetFloor === floor && it.isBusy === true);
+    return state.elevatorsData.findIndex(it => it.targetFloor === floor && it.status === ELEVATOR_STATUS.BUSY);
   }
 };
 
@@ -93,7 +97,7 @@ const actions = {
 
     commit(ADD_FLOOR_TO_ELEVATOR_QUE, { floorNumber, elevatorId: lessBusyElevatorId });
 
-    if (!state.elevatorsData[lessBusyElevatorId].isBusy) {
+    if (state.elevatorsData[lessBusyElevatorId].status === ELEVATOR_STATUS.VACANT) {
       commit(PASS_FLOOR_TO_ELEVATOR, { floorNumber, elevatorId: lessBusyElevatorId });
 
       let currentFloor = state.elevatorsData[lessBusyElevatorId].currentFloor;
@@ -110,12 +114,13 @@ const actions = {
       }, 1000);
 
       setTimeout(() => {
-        clearInterval(interval)
+        clearInterval(interval);
+        commit(CHANGE_ELEVATOR_BUSY_STATUS, { elevatorId: lessBusyElevatorId, status: ELEVATOR_STATUS.CHILL });
       }, timeout);
 
       setTimeout(() => {
-        commit(CHANGE_ELEVATOR_BUSY_STATUS, { elevatorId: lessBusyElevatorId, status: false });
-      }, timeout + 3000);
+        commit(CHANGE_ELEVATOR_BUSY_STATUS, { elevatorId: lessBusyElevatorId, status: ELEVATOR_STATUS.VACANT });
+      }, timeout + CHILL_TIME);
     }
   }
 };
@@ -141,7 +146,7 @@ const mutations = {
 
     elevatorData.floorsQue = floorsQue;
     elevatorData.targetFloor = floorNumber;
-    elevatorData.isBusy = true;
+    elevatorData.status = ELEVATOR_STATUS.BUSY;
     elevatorsData[elevatorId] = elevatorData;
 
     state.elevatorsData = elevatorsData;
@@ -159,7 +164,7 @@ const mutations = {
     const elevatorsData = [...state.elevatorsData];
     const elevatorData = elevatorsData[elevatorId];
 
-    elevatorData.isBusy = status;
+    elevatorData.status = status;
     elevatorsData[elevatorId] = elevatorData;
 
     state.elevatorsData = elevatorsData;
