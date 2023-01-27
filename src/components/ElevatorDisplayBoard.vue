@@ -15,7 +15,7 @@
         height="12"
       />
     </div>
-    <span class="board__number">{{ floorNumber }}</span>
+    <span class="board__number">{{ targetFloorNumber }}</span>
   </div>
 </template>
 
@@ -23,7 +23,7 @@
 export default {
   name: "ElevatorDisplayBoard",
   props: {
-    floorNumber: {
+    targetFloorNumber: {
       type: Number,
       required: true
     },

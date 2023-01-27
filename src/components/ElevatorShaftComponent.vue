@@ -8,7 +8,7 @@
     >
       <ElevatorDisplayBoard
         v-if="isActiveElevator(floorNumber)"
-        :floorNumber="floorNumber"
+        :targetFloorNumber="targetFloor"
         :moveDirection="moveDirection"
       />
     </div>
