@@ -1,24 +1,13 @@
-# trueconf-test-assignment
+# Тестовое задание для вакансии Junior Frontend Developer, TrueConf
 
-## Project setup
+## Установка проекта
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+## Запуск
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### В проекте присутствует конфигурационный JSON файл *config.json*, находящийся в папке *src*. С его помощью можно регулировать количество этажей и число лифтов.
