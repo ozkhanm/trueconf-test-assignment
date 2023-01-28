@@ -5,61 +5,21 @@ import {
   ADD_FLOOR_TO_ELEVATOR_QUE,
   PASS_FLOOR_TO_ELEVATOR,
   CHANGE_ELEVATOR_CURRENT_FLOOR,
-  CHANGE_ELEVATOR_BUSY_STATUS
+  CHANGE_ELEVATOR_BUSY_STATUS,
+  GET_STATE_FROM_STORAGE
 } from "@/store/mutation-types";
 
 import data from "@/config.json";
 import {
-  ELEVATOR_STATUS,
-  CHILL_TIME
+  ELEVATOR_STATUS
 } from "@/constants";
+import {
+  initializeElevatorsData,
+  getLessBusyElevatorId,
+  timeoutElevatorOperationCommits
+} from "@/helpers";
 
 Vue.use(Vuex);
-
-const initializeElevatorsData = quantity => {
-  const parsedQuantity = parseInt(quantity);
-
-  return new Array(parsedQuantity).fill(null).map((_, index) => {
-    return {
-      id: index,
-      targetFloor: 1,
-      currentFloor: 1,
-      status: ELEVATOR_STATUS.VACANT,
-      floorsQue: []
-    };
-  });
-};
-
-const getLessBusyElevatorId = (elevatorsData, floorNumber) => {
-  const vacantElevators = elevatorsData.filter(it => it.status === ELEVATOR_STATUS.VACANT);
-
-  if (vacantElevators.length !== 0) {
-    let id;
-    let oldVal = data.FLOORS_QUANTITY;
-
-    vacantElevators.forEach(it => {
-      const newVal = Math.abs(it.targetFloor - floorNumber);
-
-      if (newVal < oldVal) {
-        oldVal = newVal;
-        id = it.id;
-      }
-    });
-
-    return id;
-  }
-
-  let id;
-  const targetFloorDistances = elevatorsData.map(it => {
-    return it.floorsQue.reduce((prev, curr) => {
-      return prev + Math.abs(it.targetFloor - curr) + 3;
-    }, 0);
-  });
-
-  id = targetFloorDistances.indexOf(Math.min(...targetFloorDistances));
-
-  return id;
-};
 
 const state = {
   elevatorsData: initializeElevatorsData(data.ELEVATORS_QUANTITY)
@@ -102,26 +62,24 @@ const actions = {
 
       let currentFloor = state.elevatorsData[lessBusyElevatorId].currentFloor;
       let targetFloor = state.elevatorsData[lessBusyElevatorId].targetFloor;
-      let i = currentFloor;
-      const timeout = Math.abs(targetFloor - currentFloor) * 1000;
 
-      commit(CHANGE_ELEVATOR_CURRENT_FLOOR, { elevatorId: lessBusyElevatorId, floorNumber: i });
-      i < targetFloor ? i++ : i--;
-
-      const interval = setInterval(() => {
-        commit(CHANGE_ELEVATOR_CURRENT_FLOOR, { elevatorId: lessBusyElevatorId, floorNumber: i });
-        i < targetFloor ? i++ : i--;
-      }, 1000);
-
-      setTimeout(() => {
-        clearInterval(interval);
-        commit(CHANGE_ELEVATOR_BUSY_STATUS, { elevatorId: lessBusyElevatorId, status: ELEVATOR_STATUS.CHILL });
-      }, timeout);
-
-      setTimeout(() => {
-        commit(CHANGE_ELEVATOR_BUSY_STATUS, { elevatorId: lessBusyElevatorId, status: ELEVATOR_STATUS.VACANT });
-      }, timeout + CHILL_TIME);
+      timeoutElevatorOperationCommits(commit, {
+        currentFloor,
+        targetFloor,
+        elevatorId: lessBusyElevatorId
+      });
     }
+  },
+  continueOperations({ commit }, data) {
+    const elevatorId = data.id;
+    let currentFloor = data.currentFloor;
+    let targetFloor = data.targetFloor;
+    
+    timeoutElevatorOperationCommits(commit, {
+      currentFloor,
+      targetFloor,
+      elevatorId
+    });
   }
 };
 
@@ -168,6 +126,15 @@ const mutations = {
     elevatorsData[elevatorId] = elevatorData;
 
     state.elevatorsData = elevatorsData;
+  },
+  [GET_STATE_FROM_STORAGE](state) {
+    const prevState = localStorage.getItem("vuex-state");
+
+    if (prevState) {
+      const preparedPrevState = JSON.parse(prevState);
+      
+      this.replaceState(Object.assign(state, preparedPrevState));
+    }
   }
 };
 
@@ -175,5 +142,12 @@ export default new Vuex.Store({
   state,
   getters,
   actions,
-  mutations
+  mutations,
+  plugins: [
+    store =>{
+      store.subscribe((mutation, state) => {
+        localStorage.setItem("vuex-state", JSON.stringify(state));
+      });
+    }
+  ]
 });

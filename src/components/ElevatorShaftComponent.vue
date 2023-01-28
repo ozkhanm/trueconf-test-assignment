@@ -4,7 +4,7 @@
       v-for="floorNumber in floorsQuantity"
       :key="floorNumber"
       class="elevator-floor"
-      :class="getActiveFloorClass(floorNumber) + ' ' + getElevatorWaitingClass(floorNumber)"
+      :class="getActiveFloorClass(floorNumber) + ' ' + getMoveDirectionClass(floorNumber) + ' ' + getElevatorWaitingClass(floorNumber)"
     >
       <ElevatorDisplayBoard
         v-if="isActiveElevator(floorNumber)"
@@ -65,10 +65,17 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["processFloor"]),
+    ...mapActions(["processFloor", "continueOperations"]),
 
     getActiveFloorClass(floorNumber) {
       return floorNumber === this.currentFloor ? "elevator-floor--active" : "";
+    },
+    getMoveDirectionClass(floorNumber) {
+      if (this.status !== ELEVATOR_STATUS.VACANT && floorNumber === this.currentFloor) {
+        return this.targetFloor - this.currentFloor >= 0 ? "elevator-floor--moving-up" : "elevator-floor--moving-down";
+      }
+
+      return "";
     },
     isActiveElevator(floorNumber) {
       return this.status !== ELEVATOR_STATUS.VACANT && floorNumber === this.currentFloor ? true : false;
@@ -82,6 +89,17 @@ export default {
       if (this.floorsQue.length !== 0 && this.status === ELEVATOR_STATUS.VACANT) {
         this.processFloor(this.floorsQue[0]);
       }
+    }
+  },
+  mounted() {
+    if (this.status !== ELEVATOR_STATUS.VACANT) {
+      this.continueOperations({
+        id: this.id,
+        targetFloor: this.targetFloor,
+        currentFloor: this.currentFloor,
+        status: this.status,
+        floorsQue: this.floorsQue
+      });
     }
   }
 };
@@ -117,6 +135,32 @@ export default {
     width: 100%;
     
     border-bottom: 1px solid rgb(236, 232, 232);
+  }
+
+  &--moving-up {
+    @keyframes float-up {
+      0% {
+        transform: translateY(0);
+      }
+      100% {
+        transform: translateY(-100px);
+      }
+    }
+
+    animation: float-up 1s linear;
+  }
+
+  &--moving-down {
+    @keyframes float-down {
+      0% {
+        transform: translateY(0);
+      }
+      100% {
+        transform: translateY(100px);
+      }
+    }
+
+    animation: float-down 1s linear;
   }
 
   &--chill {
